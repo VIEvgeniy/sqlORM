@@ -1,11 +1,13 @@
+import os
 import json
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from models import create_tables, Publisher, Book, Shop, Stock, Sale
 
 models = {'publisher': Publisher, 'book': Book, 'shop': Shop, 'stock': Stock, 'sale': Sale}
-
-DSN = "postgresql://postgres:postgres@localhost:5432/bookstore"
+DSN = f'{os.environ["DIALECT"]}://{os.environ["USERNAME"]}:{os.environ["PASSWORD"]}@{os.environ["HOST"]}:' \
+      f'{os.environ["PORT"]}/{os.environ["DATABASE"]}'
+# DSN = "postgresql://postgres:postgres@localhost:5432/bookstore"
 engine = sqlalchemy.create_engine(DSN)
 
 create_tables(engine)
@@ -22,7 +24,7 @@ for row_data in data:
 session.commit()
 
 publisher = input('Введите имя автора: ')
-for s in session.query(Sale).join(Stock.sales).all():
+for s in session.query(Sale).join(Stock).join(Book).join(Publisher).filter(Publisher.name == publisher):
     print(s)
 
 session.close()
